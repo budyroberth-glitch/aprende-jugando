@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matequest_arcade - Aventura Matemática</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins & Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti para celebraciones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif']
+                    },
+                    colors: {
+                        quest: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                            accent: '#6366f1',
+                            gold: '#f59e0b',
+                            purple: '#8b5cf6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .font-game { font-family: 'Fredoka', cursive, sans-serif; }
+        /* Animaciones personalizadas */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
+        }
+        .glow-box { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- BARRA DE NAVEGACIÓN Y PERFIL -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <!-- Logo con imagen proporcionada y enlace al inicio/registro principal -->
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="goToSetupOrDashboard()">
+                <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-tr from-emerald-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <img src="image_58c15a.png" alt="MathQuest Logo" class="w-full h-full object-cover group-hover:scale-110 transition-transform" onerror="this.outerHTML='<span class=\'text-2xl font-game\'>🧮</span>'">
+                </div>
+                <div>
+                    <h1 class="font-game text-xl tracking-wide bg-gradient-to-r from-emerald-400 to-indigo-300 bg-clip-text text-transparent">MathQuest Academy</h1>
+                    <p class="text-xs text-slate-400">Aprende matemáticas jugando</p>
+                </div>
+            </div>
+
+            <!-- Panel de Estadísticas / Perfil Global -->
+            <div id="user-stats-bar" class="hidden items-center space-x-3 bg-slate-800/80 border border-slate-700/60 rounded-2xl px-4 py-1.5 shadow-inner">
+                <div id="nav-avatar" class="text-2xl cursor-pointer hover:scale-110 transition-transform" onclick="switchView('profile')" title="Cambiar Avatar">🧙‍♂️</div>
+                <div class="hidden sm:block">
+                    <div id="nav-username" class="font-game text-sm text-indigo-300">Estudiante</div>
+                    <div id="nav-rank" class="text-xs text-emerald-400 font-medium">Novato</div>
+                </div>
+                <div class="h-6 w-px bg-slate-700 mx-1"></div>
+                <!-- XP -->
+                <div class="flex items-center space-x-1" title="Puntos de Experiencia (XP)">
+                    <span class="text-sm">⭐</span>
+                    <span id="nav-xp" class="font-game text-amber-300 text-sm">0</span>
+                </div>
+                <!-- Gemas -->
+                <div class="flex items-center space-x-1" title="Gemas Mágicas">
+                    <span class="text-sm">💎</span>
+                    <span id="nav-gems" class="font-game text-cyan-300 text-sm">0</span>
+                </div>
+                <!-- Racha -->
+                <div class="flex items-center space-x-1" title="Racha de Victorias">
+                    <span class="text-sm">🔥</span>
+                    <span id="nav-streak" class="font-game text-orange-400 text-sm">0</span>
+                </div>
+            </div>
+
+            <!-- Navegación Rápida -->
+            <nav class="flex items-center space-x-2">
+                <button onclick="switchView('dashboard')" id="nav-btn-dash" class="hidden px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition items-center gap-1">
+                    🏠 <span>Panel</span>
+                </button>
+                <button onclick="switchView('shop')" id="nav-btn-shop" class="hidden px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition items-center gap-1">
+                    🛍️ <span>Tienda</span>
+                </button>
+                <button onclick="switchView('achievements')" id="nav-btn-ach" class="hidden px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition items-center gap-1">
+                    🏆 <span>Logros</span>
+                </button>
+                <button onclick="userLogout()" id="nav-btn-logout" class="hidden px-3 py-1.5 rounded-xl bg-rose-900/40 hover:bg-rose-900/60 text-rose-300 text-xs sm:text-sm font-medium transition items-center gap-1 border border-rose-500/30">
+                    🚪 <span>Salir</span>
+                </button>
+                <button onclick="openDonateModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white text-xs sm:text-sm font-medium transition flex items-center gap-1 shadow-md animate-pulse">
+                    💖 <span>Donar</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL DE VISTAS -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+        <!-- ================= VISTA: SETUP / LOGIN / REGISTRO Y LEADERBOARD ================= -->
+        <section id="view-setup" class="view-container max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <!-- Pestañas de Autenticación (Login / Registro / Demo) -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-center space-x-2 mb-6 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-700">
+                    <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-2 text-xs sm:text-sm font-game rounded-xl bg-indigo-600 text-white shadow-md transition">Iniciar Sesión</button>
+                    <button onclick="switchAuthTab('register')" id="tab-register" class="flex-1 py-2 text-xs sm:text-sm font-game rounded-xl text-slate-400 hover:text-white transition">Registrarse</button>
+                </div>
+
+                <!-- Formulario de Login -->
+                <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Usuario o Correo Electrónico</label>
+                        <input type="text" id="login-user" required placeholder="Ej. estudiante@mathquest.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 font-poppins text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 font-poppins text-sm">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-game py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 transition transform active:scale-95 text-base">
+                        Entrar a la Academia ⚡
+                    </button>
+                    <button type="button" onclick="handleDemoMode()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-game py-2.5 rounded-xl border border-slate-600 transition text-xs flex items-center justify-center gap-2">
+                        <span>🧪</span> <span>Probar en Modo Demo (Sin Guardar)</span>
+                    </button>
+                </form>
+
+                <!-- Formulario de Registro -->
+                <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre de Usuario</label>
+                        <input type="text" id="reg-username" required maxlength="15" placeholder="Ej. Pitágoras Jr." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 font-poppins text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                        <input type="email" id="reg-email" required placeholder="tucorreo@dominio.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 font-poppins text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
+                        <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 font-poppins text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Elige tu Avatar Inicial</label>
+                        <div class="grid grid-cols-4 gap-2" id="avatar-selector">
+                            <button type="button" onclick="selectSetupAvatar('🧙‍♂️')" class="avatar-option p-2 bg-slate-900 border-2 border-indigo-500 rounded-xl text-xl hover:scale-105 transition">🧙‍♂️</button>
+                            <button type="button" onclick="selectSetupAvatar('👩‍🔬')" class="avatar-option p-2 bg-slate-900 border-2 border-slate-700 rounded-xl text-xl hover:scale-105 transition">👩‍🔬</button>
+                            <button type="button" onclick="selectSetupAvatar('🦸‍♀️')" class="avatar-option p-2 bg-slate-900 border-2 border-slate-700 rounded-xl text-xl hover:scale-105 transition">🦸‍♀️</button>
+                            <button type="button" onclick="selectSetupAvatar('🦊')" class="avatar-option p-2 bg-slate-900 border-2 border-slate-700 rounded-xl text-xl hover:scale-105 transition">🦊</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-game py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 transition transform active:scale-95 text-base">
+                        Registrarse y Aprender 🚀
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tabla de Mejores Puntuaciones (Leaderboard Dinámica) -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-game text-xl text-white flex items-center gap-2">
+                            <span>🏆</span> Mejores Puntuaciones
+                        </h3>
+                        <span class="text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full font-medium">Salón de la Fama</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-4">Estudiantes registrados que lideran el ranking con su progreso.</p>
+                    
+                    <div id="leaderboard-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-700/60 text-center">
+                    <p class="text-xs text-slate-400">¡Crea tu cuenta, juega y aparece en el ranking global!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VISTA: DASHBOARD / SELECTOR DE NIVELES ================= -->
+        <section id="view-dashboard" class="view-container hidden space-y-6">
+            <!-- Saludo y Banner rápido -->
+            <div class="bg-gradient-to-r from-indigo-800/80 via-purple-800/80 to-slate-800/90 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
+                <div class="relative z-10 max-w-2xl">
+                    <span id="dash-greeting" class="bg-indigo-500/30 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Nivel Novato</span>
+                    <h2 class="font-game text-3xl sm:text-4xl text-white mt-3">¡Bienvenido de vuelta, <span id="dash-username">Héroe</span>!</h2>
+                    <p class="text-slate-300 mt-2 text-sm sm:text-base">Elige un módulo de aprendizaje o desafía el modo contrarreloj para poner a prueba tus habilidades matemáticas.</p>
+                </div>
+                <div class="absolute right-4 -bottom-6 text-8xl sm:text-9xl opacity-20 select-none">📐</div>
+            </div>
+
+            <!-- Selección de Módulos (Niveles del 1 al 5) -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-game text-xl sm:text-2xl text-white flex items-center gap-2">
+                        <span>📚</span> Módulos de Aprendizaje
+                    </h3>
+                    <span class="text-xs text-slate-400">Selecciona un nivel de dificultad</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Nivel 1 -->
+                    <div onclick="startModule(1)" class="bg-slate-800/80 border border-slate-700/80 hover:border-emerald-500 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-lg group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full pointer-events-none transition group-hover:bg-emerald-500/20"></div>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-game">1</div>
+                            <div>
+                                <span class="text-xs font-semibold text-emerald-400 uppercase">Básico</span>
+                                <h4 class="font-game text-lg text-white">Operaciones Básicas</h4>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Suma, resta, multiplicación y división con números enteros y agilidad mental.</p>
+                        <div class="flex items-center justify-between text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                            <span>Recompensa: 10 XP / Pregunta</span>
+                            <span class="text-emerald-400 font-game group-hover:translate-x-1 transition-transform">Jugar →</span>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 2 -->
+                    <div onclick="startModule(2)" class="bg-slate-800/80 border border-slate-700/80 hover:border-cyan-500 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-lg group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-bl-full pointer-events-none transition group-hover:bg-cyan-500/20"></div>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl font-game">2</div>
+                            <div>
+                                <span class="text-xs font-semibold text-cyan-400 uppercase">Intermedio</span>
+                                <h4 class="font-game text-lg text-white">Fracciones y Decimales</h4>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Suma y resta de fracciones, conversiones y operaciones con decimales.</p>
+                        <div class="flex items-center justify-between text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                            <span>Recompensa: 15 XP / Pregunta</span>
+                            <span class="text-cyan-400 font-game group-hover:translate-x-1 transition-transform">Jugar →</span>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 3 -->
+                    <div onclick="startModule(3)" class="bg-slate-800/80 border border-slate-700/80 hover:border-amber-500 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-lg group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-bl-full pointer-events-none transition group-hover:bg-amber-500/20"></div>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl font-game">3</div>
+                            <div>
+                                <span class="text-xs font-semibold text-amber-400 uppercase">Avanzado I</span>
+                                <h4 class="font-game text-lg text-white">Álgebra Introductoria</h4>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Ecuaciones de primer grado, despeje de X y simplificación de expresiones.</p>
+                        <div class="flex items-center justify-between text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                            <span>Recompensa: 25 XP / Pregunta</span>
+                            <span class="text-amber-400 font-game group-hover:translate-x-1 transition-transform">Jugar →</span>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 4 -->
+                    <div onclick="startModule(4)" class="bg-slate-800/80 border border-slate-700/80 hover:border-purple-500 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-lg group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full pointer-events-none transition group-hover:bg-purple-500/20"></div>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl font-game">4</div>
+                            <div>
+                                <span class="text-xs font-semibold text-purple-400 uppercase">Avanzado II</span>
+                                <h4 class="font-game text-lg text-white">Geometría y Trigonometría</h4>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Áreas, Teorema de Pitágoras y funciones trigonométricas (Sen, Cos, Tan).</p>
+                        <div class="flex items-center justify-between text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                            <span>Recompensa: 35 XP / Pregunta</span>
+                            <span class="text-purple-400 font-game group-hover:translate-x-1 transition-transform">Jugar →</span>
+                        </div>
+                    </div>
+
+                    <!-- Nivel 5 -->
+                    <div onclick="startModule(5)" class="bg-slate-800/80 border border-slate-700/80 hover:border-rose-500 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-lg group relative overflow-hidden md:col-span-2 lg:col-span-1">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-bl-full pointer-events-none transition group-hover:bg-rose-500/20"></div>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl font-game">5</div>
+                            <div>
+                                <span class="text-xs font-semibold text-rose-400 uppercase">Maestro</span>
+                                <h4 class="font-game text-lg text-white">Cálculo y Análisis</h4>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Derivadas básicas de polinomios, integrales sencillas, sucesiones y límites.</p>
+                        <div class="flex items-center justify-between text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                            <span>Recompensa: 50 XP / Pregunta</span>
+                            <span class="text-rose-400 font-game group-hover:translate-x-1 transition-transform">Jugar →</span>
+                        </div>
+                    </div>
+
+                    <!-- Modo Contrarreloj Card -->
+                    <div onclick="startTimedChallenge()" class="bg-gradient-to-br from-indigo-900 to-purple-900 border border-indigo-400/50 hover:border-indigo-300 rounded-3xl p-5 cursor-pointer transition transform hover:-translate-y-1 shadow-xl group relative overflow-hidden md:col-span-2 lg:col-span-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-3xl font-game shadow-md">⏱️</div>
+                                <div>
+                                    <span class="text-xs font-semibold text-amber-300 uppercase tracking-widest">Modo Reto Especial</span>
+                                    <h4 class="font-game text-xl text-white">Desafío Contrarreloj (60s)</h4>
+                                    <p class="text-xs text-slate-300 mt-1">Responde tantas preguntas como puedas en 1 minuto. Gana gemas extra y multiplica tu XP.</p>
+                                </div>
+                            </div>
+                            <button class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-game px-5 py-2.5 rounded-xl shadow-lg transition text-sm">
+                                ¡Iniciar Reto! ⚡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VISTA: PARTIDA / JUEGO ACTIVO ================= -->
+        <section id="view-game" class="view-container hidden max-w-2xl mx-auto w-full space-y-5">
+            <!-- Barra superior del juego -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <button onclick="quitGame()" class="text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition flex items-center gap-1">
+                    ← <span>Salir</span>
+                </button>
+                <div class="text-center">
+                    <span id="game-title-header" class="font-game text-sm text-indigo-300 uppercase tracking-wider">Módulo 1</span>
+                    <div id="game-progress-text" class="text-xs text-slate-400">Pregunta 1 de 10</div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div id="timer-box" class="hidden items-center space-x-1 bg-amber-500/20 text-amber-300 px-3 py-1 rounded-xl font-game text-sm">
+                        <span>⏳</span> <span id="timer-val">60</span>s
+                    </div>
+                    <div class="flex items-center space-x-1 bg-slate-900 px-3 py-1 rounded-xl">
+                        <span class="text-sm">❤️</span> <span id="game-lives" class="font-game text-rose-400 text-sm">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Pregunta -->
+            <div class="bg-slate-800/95 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-700">
+                    <div id="game-progress-bar" class="h-full bg-gradient-to-r from-emerald-400 to-indigo-500 transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <!-- Enunciado de la pregunta -->
+                <div class="text-center my-6">
+                    <span id="question-category-tag" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase">Suma y Resta</span>
+                    <h3 id="question-text" class="font-game text-2xl sm:text-4xl text-white mt-4 tracking-wide leading-snug">
+                        ¿Cuánto es 15 + 27?
+                    </h3>
+                </div>
+
+                <!-- Opciones de Respuesta Múltiple -->
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+                    <!-- Generado dinámicamente -->
+                </div>
+
+                <!-- Panel de Entrada Numérica (si aplica) -->
+                <div id="input-answer-container" class="hidden mt-6 space-y-4">
+                    <input type="text" id="numeric-answer-input" placeholder="Escribe tu respuesta..." class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-center text-xl font-game text-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="submitNumericAnswer()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-game py-3.5 rounded-xl shadow-lg transition">
+                        Comprobar Respuesta ↵
+                    </button>
+                </div>
+
+                <!-- Explicación / Retroalimentación Paso a Paso (Oculta por defecto) -->
+                <div id="feedback-box" class="hidden mt-6 p-4 rounded-2xl border transition-all animate-fadeIn">
+                    <div class="flex items-center space-x-2 font-game text-base mb-1" id="feedback-title">
+                        <span>✨</span> <span>¡Correcto!</span>
+                    </div>
+                    <p id="feedback-explanation" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Explicación detallada del problema paso a paso.
+                    </p>
+                    <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-game py-2.5 rounded-xl text-sm shadow-md transition">
+                        Siguiente Pregunta →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VISTA: RESULTADOS DE PARTIDA ================= -->
+        <section id="view-results" class="view-container hidden max-w-md mx-auto w-full bg-slate-800/90 border border-slate-700 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
+            <div class="text-6xl mb-3 animate-float" id="results-icon">🏆</div>
+            <h2 class="font-game text-3xl text-white" id="results-title">¡Misión Cumplida!</h2>
+            <p class="text-slate-300 text-sm mt-1" id="results-subtitle">Has completado el módulo exitosamente.</p>
+
+            <div class="grid grid-cols-2 gap-3 my-6">
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+                    <div class="text-xs text-slate-400">XP Ganado</div>
+                    <div id="res-xp" class="font-game text-2xl text-amber-300 mt-1">+120</div>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+                    <div class="text-xs text-slate-400">Gemas</div>
+                    <div id="res-gems" class="font-game text-2xl text-cyan-300 mt-1">+15</div>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+                    <div class="text-xs text-slate-400">Aciertos</div>
+                    <div id="res-score" class="font-game text-2xl text-emerald-400 mt-1">8 / 10</div>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/60">
+                    <div class="text-xs text-slate-400">Precisión</div>
+                    <div id="res-accuracy" class="font-game text-2xl text-indigo-300 mt-1">80%</div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="switchView('dashboard')" class="w-full bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-game py-3.5 rounded-xl shadow-lg transition">
+                    Volver al Menú Principal 🏠
+                </button>
+                <button onclick="restartCurrentModule()" class="w-full bg-slate-900 hover:bg-slate-700 text-slate-200 font-game py-3 rounded-xl border border-slate-700 transition text-sm">
+                    Jugar de Nuevo 🔄
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VISTA: TIENDA ================= -->
+        <section id="view-shop" class="view-container hidden max-w-4xl mx-auto w-full space-y-6">
+            <div class="bg-gradient-to-r from-cyan-900/80 to-indigo-900/80 border border-cyan-500/30 rounded-3xl p-6 sm:p-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-game text-2xl sm:text-3xl text-white flex items-center gap-2">
+                            <span>🛍️</span> Tienda del Sabio
+                        </h2>
+                        <p class="text-xs sm:text-sm text-cyan-200 mt-1">Personaliza tu perfil comprando nuevos avatares con tus gemas mágicas.</p>
+                    </div>
+                    <div class="bg-slate-900/90 px-4 py-2 rounded-2xl border border-cyan-500/40 flex items-center space-x-2">
+                        <span>💎</span>
+                        <span id="shop-gems-val" class="font-game text-cyan-300 text-lg">50</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="shop-items-grid">
+                <!-- Generado por JS -->
+            </div>
+        </section>
+
+        <!-- ================= VISTA: LOGROS ================= -->
+        <section id="view-achievements" class="view-container hidden max-w-4xl mx-auto w-full space-y-6">
+            <div class="bg-gradient-to-r from-amber-900/80 to-purple-900/80 border border-amber-500/30 rounded-3xl p-6 sm:p-8">
+                <h2 class="font-game text-2xl sm:text-3xl text-white flex items-center gap-2">
+                    <span>🏆</span> Salón de Logros
+                </h2>
+                <p class="text-xs sm:text-sm text-amber-200 mt-1">Completa desafíos especiales para desbloquear medallas legendarias y XP.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="achievements-list">
+                <!-- Generado por JS -->
+            </div>
+        </section>
+
+        <!-- ================= VISTA: CAMBIO DE AVATAR (PERFIL) ================= -->
+        <section id="view-profile" class="view-container hidden max-w-md mx-auto w-full bg-slate-800/90 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+            <div class="text-6xl mb-2" id="profile-current-avatar">🧙‍♂️</div>
+            <h2 id="profile-username" class="font-game text-2xl text-white">Estudiante</h2>
+            <p id="profile-email" class="text-xs text-slate-400 mt-0.5">correo@dominio.com</p>
+            <p id="profile-rank" class="text-xs text-emerald-400 font-semibold uppercase tracking-wider mt-1">Novato</p>
+
+            <div class="my-6 space-y-3 text-left bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Puntos XP:</span>
+                    <span id="profile-xp" class="font-game text-amber-300">0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Gemas:</span>
+                    <span id="profile-gems" class="font-game text-cyan-300">0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Racha actual:</span>
+                    <span id="profile-streak" class="font-game text-orange-400">0</span>
+                </div>
+            </div>
+
+            <h3 class="font-game text-sm text-slate-300 mb-3 text-left">Tus Avatares Desbloqueados:</h3>
+            <div id="profile-avatars-grid" class="grid grid-cols-4 gap-3 mb-6">
+                <!-- Generado por JS -->
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="switchView('dashboard')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-game py-3 rounded-xl shadow-lg transition">
+                    Volver al Panel 🏠
+                </button>
+                <button onclick="userLogout()" class="w-full bg-slate-900 hover:bg-slate-800 text-rose-400 font-game py-2.5 rounded-xl border border-rose-500/30 transition text-xs">
+                    Cerrar Sesión 🚪
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 font-medium">
+        MathQuest Academy &bull; Aprendizaje de Matemáticas Gamificado &copy; 2026
+        <div>Derechos reservados - Budy Rojas López</div>
+    </footer>
+
+    <!-- MODAL DE DONACIONES (YAPE / PLIN) -->
+    <div id="donate-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative text-center animate-fadeIn">
+            <button onclick="closeDonateModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">✕</button>
+            
+            <div class="text-4xl mb-2">💖</div>
+            <h3 class="font-game text-2xl text-white">¡Apoya el Proyecto!</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Si te encanta MathQuest Academy y deseas apoyar para seguir creando herramientas educativas gratuitas, puedes realizar tu donación mediante <span class="text-purple-400 font-bold">Yape</span> o <span class="text-pink-400 font-bold">Plin</span>.
+            </p>
+
+            <div class="my-6 bg-slate-900/90 border border-slate-700 p-5 rounded-2xl space-y-3">
+                <div class="text-xs text-slate-400 uppercase tracking-wider">Número de Celular</div>
+                <div class="font-game text-2xl sm:text-3xl text-amber-300 tracking-wider select-all">+51 942 885 581</div>
+                <div class="text-xs text-emerald-400 font-medium">Titular: Desarrollador MathQuest</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-purple-900/40 border border-purple-500/40 p-3 rounded-xl text-center">
+                    <span class="text-lg">📱</span>
+                    <div class="font-game text-sm text-purple-300 mt-1">Yape</div>
+                </div>
+                <div class="bg-pink-900/40 border border-pink-500/40 p-3 rounded-xl text-center">
+                    <span class="text-lg">📲</span>
+                    <div class="font-game text-sm text-pink-300 mt-1">Plin</div>
+                </div>
+            </div>
+
+            <button onclick="copyDonationNumber()" class="w-full bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-game py-3 rounded-xl shadow-lg transition text-sm">
+                Copiar Número al Portapapeles 📋
+            </button>
+        </div>
+    </div>
+
+    <!-- LÓGICA DE JUEGO (JAVASCRIPT) -->
+    <script>
+        // ================= ESTADO GLOBAL DEL JUEGO =================
+        let gameState = {
+            username: "",
+            email: "",
+            password: "",
+            avatar: "🧙‍♂️",
+            xp: 0,
+            gems: 0,
+            streak: 0,
+            rank: "Novato",
+            isDemo: false,
+            unlockedAvatars: ["🧙‍♂️", "👩‍🔬", "🦸‍♀️", "🦊"],
+            achievements: {
+                firstStep: { title: "Primeros Pasos", desc: "Completa tu primera lección", unlocked: false, reward: 20 },
+                streakMaster: { title: "Racha Imparable", desc: "Consigue una racha de 5 victorias", unlocked: false, reward: 50 },
+                einstein: { title: "Mente de Einstein", desc: "Alcanza 300 puntos XP", unlocked: false, reward: 100 },
+                mathemagician: { title: "Matemago Supremo", desc: "Desbloquea 3 avatares en la tienda", unlocked: false, reward: 150 }
+            }
+        };
+
+        // Estado de la partida actual
+        let currentModule = 1;
+        let isTimedMode = false;
+        let currentQuestionIndex = 0;
+        let totalQuestions = 10;
+        let scoreCorrect = 0;
+        let lives = 3;
+        let activeQuestion = null;
+        let timerInterval = null;
+        let timeLeft = 60;
+        let setupSelectedAvatar = "🧙‍♂️";
+
+        // Tienda de avatares disponibles
+        const shopAvatars = [
+            { icon: "🧙‍♂️", name: "Mago sabio", price: 0, unlocked: true },
+            { icon: "👩‍🔬", name: "Científica", price: 0, unlocked: true },
+            { icon: "🦸‍♀️", name: "Superhéroe", price: 0, unlocked: true },
+            { icon: "🦊", name: "Zorro astuto", price: 0, unlocked: true },
+            { icon: "🤖", name: "RoboMath", price: 60, unlocked: false },
+            { icon: "🦄", name: "Unicornio cósmico", price: 100, unlocked: false },
+            { icon: "🐉", name: "Dragón arcano", price: 150, unlocked: false },
+            { icon: "👑", name: "Rey Matemático", price: 250, unlocked: false }
+        ];
+
+        // Inicialización al cargar la página (Registros en cero, sesión limpia)
+        window.addEventListener('DOMContentLoaded', () => {
+            resetGameStateToZero();
+            renderLeaderboard();
+            switchView('setup');
+        });
+
+        function resetGameStateToZero() {
+            gameState = {
+                username: "",
+                email: "",
+                password: "",
+                avatar: "🧙‍♂️",
+                xp: 0,
+                gems: 0,
+                streak: 0,
+                rank: "Novato",
+                isDemo: false,
+                unlockedAvatars: ["🧙‍♂️", "👩‍🔬", "🦸‍♀️", "🦊"],
+                achievements: {
+                    firstStep: { title: "Primeros Pasos", desc: "Completa tu primera lección", unlocked: false, reward: 20 },
+                    streakMaster: { title: "Racha Imparable", desc: "Consigue una racha de 5 victorias", unlocked: false, reward: 50 },
+                    einstein: { title: "Mente de Einstein", desc: "Alcanza 300 puntos XP", unlocked: false, reward: 100 },
+                    mathemagician: { title: "Matemago Supremo", desc: "Desbloquea 3 avatares en la tienda", unlocked: false, reward: 150 }
+                }
+            };
+        }
+
+        // Cambio de pestañas Login / Registrarse
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabReg = document.getElementById('tab-register');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLogin.className = "flex-1 py-2 text-xs sm:text-sm font-game rounded-xl bg-indigo-600 text-white shadow-md transition";
+                tabReg.className = "flex-1 py-2 text-xs sm:text-sm font-game rounded-xl text-slate-400 hover:text-white transition";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabReg.className = "flex-1 py-2 text-xs sm:text-sm font-game rounded-xl bg-indigo-600 text-white shadow-md transition";
+                tabLogin.className = "flex-1 py-2 text-xs sm:text-sm font-game rounded-xl text-slate-400 hover:text-white transition";
+            }
+        }
+
+        // Selección de avatar en registro
+        function selectSetupAvatar(icon) {
+            setupSelectedAvatar = icon;
+            document.querySelectorAll('.avatar-option').forEach(btn => {
+                btn.classList.remove('border-indigo-500');
+                btn.classList.add('border-slate-700');
+                if (btn.innerText === icon) {
+                    btn.classList.remove('border-slate-700');
+                    btn.classList.add('border-indigo-500');
+                }
+            });
+        }
+
+        // Manejo de Registro
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const password = document.getElementById('reg-pass').value;
+
+            if (!username || !email || !password) {
+                alert("Por favor completa todos los campos.");
+                return;
+            }
+
+            let usersList = getUsersStorage();
+            if (usersList.some(u => u.email === email || u.username.toLowerCase() === username.toLowerCase())) {
+                alert("El nombre de usuario o correo electrónico ya se encuentra registrado. Por favor inicia sesión.");
+                switchAuthTab('login');
+                return;
+            }
+
+            const newUser = {
+                username,
+                email,
+                password,
+                avatar: setupSelectedAvatar,
+                xp: 0,
+                gems: 30, // Bono de bienvenida
+                streak: 0,
+                rank: "Novato",
+                unlockedAvatars: ["🧙‍♂️", "👩‍🔬", "🦸‍♀️", "🦊"],
+                achievements: {
+                    firstStep: { title: "Primeros Pasos", desc: "Completa tu primera lección", unlocked: false, reward: 20 },
+                    streakMaster: { title: "Racha Imparable", desc: "Consigue una racha de 5 victorias", unlocked: false, reward: 50 },
+                    einstein: { title: "Mente de Einstein", desc: "Alcanza 300 puntos XP", unlocked: false, reward: 100 },
+                    mathemagician: { title: "Matemago Supremo", desc: "Desbloquea 3 avatares en la tienda", unlocked: false, reward: 150 }
+                }
+            };
+
+            usersList.push(newUser);
+            saveUsersStorage(usersList);
+
+            // Iniciar sesión automáticamente
+            gameState = newUser;
+            gameState.isDemo = false;
+            
+            alert("¡Registro exitoso! Bienvenido a MathQuest Academy.");
+            postLoginSuccess();
+        }
+
+        // Manejo de Inicio de Sesión (Login)
+        function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('login-user').value.trim().toLowerCase();
+            const password = document.getElementById('login-pass').value;
+
+            let usersList = getUsersStorage();
+            const found = usersList.find(u => (u.email === identifier || u.username.toLowerCase() === identifier) && u.password === password);
+
+            if (!found) {
+                alert("Credenciales incorrectas o usuario no encontrado. Verifica tus datos o regístrate.");
+                return;
+            }
+
+            gameState = { ...found };
+            gameState.isDemo = false;
+            postLoginSuccess();
+        }
+
+        // Activar Modo Demo
+        function handleDemoMode() {
+            gameState = {
+                username: "Invitado (Demo)",
+                email: "demo@mathquest.com",
+                password: "",
+                avatar: setupSelectedAvatar,
+                xp: 0,
+                gems: 50,
+                streak: 0,
+                rank: "Novato",
+                isDemo: true,
+                unlockedAvatars: ["🧙‍♂️", "👩‍🔬", "🦸‍♀️", "🦊"],
+                achievements: {
+                    firstStep: { title: "Primeros Pasos", desc: "Completa tu primera lección", unlocked: false, reward: 20 },
+                    streakMaster: { title: "Racha Imparable", desc: "Consigue una racha de 5 victorias", unlocked: false, reward: 50 },
+                    einstein: { title: "Mente de Einstein", desc: "Alcanza 300 puntos XP", unlocked: false, reward: 100 },
+                    mathemagician: { title: "Matemago Supremo", desc: "Desbloquea 3 avatares en la tienda", unlocked: false, reward: 150 }
+                }
+            };
+            postLoginSuccess();
+        }
+
+        function postLoginSuccess() {
+            // Mostrar barra de estadísticas y controles de navegación
+            document.getElementById('user-stats-bar').classList.remove('hidden');
+            document.getElementById('user-stats-bar').classList.add('flex');
+            document.getElementById('nav-btn-dash').classList.remove('hidden');
+            document.getElementById('nav-btn-dash').classList.add('flex');
+            document.getElementById('nav-btn-shop').classList.remove('hidden');
+            document.getElementById('nav-btn-shop').classList.add('flex');
+            document.getElementById('nav-btn-ach').classList.remove('hidden');
+            document.getElementById('nav-btn-ach').classList.add('flex');
+            document.getElementById('nav-btn-logout').classList.remove('hidden');
+            document.getElementById('nav-btn-logout').classList.add('flex');
+
+            switchView('dashboard');
+            updateUI();
+        }
+
+        // Cerrar Sesión (Logout)
+        function userLogout() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            // Ocultar botones de sesión activa
+            document.getElementById('user-stats-bar').classList.add('hidden');
+            document.getElementById('user-stats-bar').classList.remove('flex');
+            document.getElementById('nav-btn-dash').classList.add('hidden');
+            document.getElementById('nav-btn-shop').classList.add('hidden');
+            document.getElementById('nav-btn-ach').classList.add('hidden');
+            document.getElementById('nav-btn-logout').classList.add('hidden');
+
+            resetGameStateToZero();
+            switchView('setup');
+            renderLeaderboard();
+        }
+
+        // Al hacer clic en el logo, ir al inicio (setup o dashboard si está logueado)
+        function goToSetupOrDashboard() {
+            if (gameState.username && !gameState.isDemo) {
+                switchView('dashboard');
+            } else if (gameState.isDemo) {
+                switchView('dashboard');
+            } else {
+                switchView('setup');
+                renderLeaderboard();
+            }
+        }
+
+        // Gestión de almacenamiento de usuarios
+        function getUsersStorage() {
+            try {
+                const data = localStorage.getItem('mathquest_all_users');
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveUsersStorage(usersList) {
+            localStorage.setItem('mathquest_all_users', JSON.stringify(usersList));
+            updateGlobalLeaderboard(usersList);
+        }
+
+        function updateUserData() {
+            if (gameState.isDemo) return; // En demo no se guarda progreso
+            let usersList = getUsersStorage();
+            const idx = usersList.findIndex(u => u.email === gameState.email);
+            if (idx >= 0) {
+                usersList[idx] = { ...gameState };
+            } else {
+                usersList.push({ ...gameState });
+            }
+            saveUsersStorage(usersList);
+        }
+
+        function updateGlobalLeaderboard(usersList) {
+            // Filtrar solo usuarios reales no demo ordenados por XP
+            let board = usersList.map(u => ({ name: u.username, xp: u.xp, avatar: u.avatar }));
+            board.sort((a, b) => b.xp - a.xp);
+            localStorage.setItem('mathquest_leaderboard', JSON.stringify(board.slice(0, 5)));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const listEl = document.getElementById('leaderboard-list');
+            if (!listEl) return;
+
+            let board = [];
+            const storedBoard = localStorage.getItem('mathquest_leaderboard');
+            if (storedBoard) {
+                try { board = JSON.parse(storedBoard); } catch(e) {}
+            }
+
+            listEl.innerHTML = '';
+            if (board.length === 0) {
+                listEl.innerHTML = `<div class="text-center text-xs text-slate-500 py-6">Aún no hay puntuaciones registradas. ¡Sé el primero en la lista!</div>`;
+                return;
+            }
+
+            board.forEach((user, index) => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-900/80 border border-slate-700/60 p-3 rounded-2xl flex items-center justify-between";
+                
+                let medal = `#${index + 1}`;
+                if (index === 0) medal = "🥇";
+                else if (index === 1) medal = "🥈";
+                else if (index === 2) medal = "🥉";
+
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="font-game text-sm w-6 text-center text-amber-300">${medal}</span>
+                        <span class="text-xl">${user.avatar}</span>
+                        <span class="font-game text-sm text-white">${user.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-1 font-game text-sm text-amber-300">
+                        <span>⭐</span> <span>${user.xp} XP</span>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        // Cambio de vistas en la UI
+        function switchView(viewId) {
+            document.querySelectorAll('.view-container').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`view-${viewId}`);
+            if (target) target.classList.remove('hidden');
+
+            if (viewId === 'dashboard') {
+                document.getElementById('dash-username').innerText = gameState.username || "Estudiante";
+                updateRank();
+                const modeLabel = gameState.isDemo ? "Modo Demo (Sin Guardar)" : `Rango: ${gameState.rank}`;
+                document.getElementById('dash-greeting').innerText = modeLabel;
+                updateUI();
+            } else if (viewId === 'setup') {
+                renderLeaderboard();
+            } else if (viewId === 'shop') {
+                renderShop();
+            } else if (viewId === 'achievements') {
+                renderAchievements();
+            } else if (viewId === 'profile') {
+                renderProfile();
+            }
+        }
+
+        // Actualizar barra superior y datos globales
+        function updateUI() {
+            document.getElementById('nav-username').innerText = gameState.username || "Estudiante";
+            document.getElementById('nav-avatar').innerText = gameState.avatar;
+            document.getElementById('nav-xp').innerText = gameState.xp;
+            document.getElementById('nav-gems').innerText = gameState.gems;
+            document.getElementById('nav-streak').innerText = gameState.streak;
+            updateRank();
+            document.getElementById('nav-rank').innerText = gameState.isDemo ? "Demo" : gameState.rank;
+            if (!gameState.isDemo) {
+                checkAchievementsProgress();
+            }
+        }
+
+        function updateRank() {
+            if (gameState.xp >= 400) gameState.rank = "Genio Matemático 🌌";
+            else if (gameState.xp >= 250) gameState.rank = "Maestro 🧙‍♂️";
+            else if (gameState.xp >= 120) gameState.rank = "Explorador 🚀";
+            else gameState.rank = "Novato 🎒";
+        }
+
+        // ================= GENERACIÓN DE PREGUNTAS ALGORÍTMICA =================
+        function startModule(moduleNum) {
+            currentModule = moduleNum;
+            isTimedMode = false;
+            currentQuestionIndex = 0;
+            scoreCorrect = 0;
+            lives = 3;
+            document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('game-title-header').innerText = `Módulo ${moduleNum}: ${getModuleName(moduleNum)}`;
+            switchView('game');
+            loadNextQuestion();
+        }
+
+        function startTimedChallenge() {
+            currentModule = 1;
+            isTimedMode = true;
+            currentQuestionIndex = 0;
+            scoreCorrect = 0;
+            lives = 3;
+            timeLeft = 60;
+            document.getElementById('timer-box').classList.remove('hidden');
+            document.getElementById('game-title-header').innerText = `⏱️ Reto Contrarreloj`;
+            switchView('game');
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-val').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame(true);
+                }
+            }, 1000);
+
+            loadNextQuestion();
+        }
+
+        function getModuleName(num) {
+            switch(num) {
+                case 1: return "Operaciones Básicas";
+                case 2: return "Fracciones y Decimales";
+                case 3: return "Álgebra Introductoria";
+                case 4: return "Geometría y Trigonometría";
+                case 5: return "Cálculo y Análisis";
+                default: return "Matemáticas";
+            }
+        }
+
+        function loadNextQuestion() {
+            if (!isTimedMode && currentQuestionIndex >= totalQuestions) {
+                endGame(false);
+                return;
+            }
+
+            currentQuestionIndex++;
+            document.getElementById('game-progress-text').innerText = isTimedMode ? `Pregunta #${currentQuestionIndex}` : `Pregunta ${currentQuestionIndex} de ${totalQuestions}`;
+            const pct = isTimedMode ? Math.min((currentQuestionIndex * 10), 100) : ((currentQuestionIndex / totalQuestions) * 100);
+            document.getElementById('game-progress-bar').style.width = `${pct}%`;
+
+            document.getElementById('feedback-box').classList.add('hidden');
+            document.getElementById('numeric-answer-input').value = '';
+
+            let modToUse = isTimedMode ? Math.floor(Math.random() * 5) + 1 : currentModule;
+            activeQuestion = generateQuestionForLevel(modToUse);
+
+            document.getElementById('question-category-tag').innerText = activeQuestion.category;
+            document.getElementById('question-text').innerText = activeQuestion.text;
+
+            const optionsContainer = document.getElementById('options-container');
+            const inputContainer = document.getElementById('input-answer-container');
+
+            if (activeQuestion.type === 'multiple') {
+                optionsContainer.classList.remove('hidden');
+                inputContainer.classList.add('hidden');
+                optionsContainer.innerHTML = '';
+                
+                activeQuestion.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-slate-900/90 hover:bg-slate-700/80 border border-slate-700 text-white font-game py-3.5 px-4 rounded-2xl transition text-left text-base sm:text-lg flex items-center justify-between group shadow-md";
+                    btn.innerHTML = `<span>${opt}</span> <span class="text-xs text-slate-500 group-hover:text-indigo-300 font-sans">Opción ${idx+1}</span>`;
+                    btn.onclick = () => checkAnswer(opt);
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                optionsContainer.classList.add('hidden');
+                inputContainer.classList.remove('hidden');
+                setTimeout(() => document.getElementById('numeric-answer-input').focus(), 100);
+            }
+        }
+
+        function generateQuestionForLevel(level) {
+            let q = { type: 'multiple', category: '', text: '', answer: '', options: [], explanation: '' };
+
+            if (level === 1) {
+                q.category = "Aritmética Básica";
+                const ops = ['+', '-', '*'];
+                const op = ops[Math.floor(Math.random() * ops.length)];
+                let a = Math.floor(Math.random() * 50) + 5;
+                let b = Math.floor(Math.random() * 50) + 5;
+                if (op === '-' && b > a) { let temp = a; a = b; b = temp; }
+                if (op === '*') { a = Math.floor(Math.random() * 12) + 2; b = Math.floor(Math.random() * 12) + 2; }
+                
+                let ans = op === '+' ? a + b : (op === '-' ? a - b : a * b);
+                q.text = `¿Cuánto es ${a} ${op === '*' ? '×' : op} ${b}?`;
+                q.answer = ans.toString();
+                q.explanation = `El resultado de operar ${a} y ${b} con '${op}' es ${ans}. ¡Excelente cálculo mental!`;
+                q.options = generateDistractors(ans, 3);
+            } 
+            else if (level === 2) {
+                q.category = "Fracciones y Decimales";
+                const subType = Math.random() > 0.5 ? 'dec' : 'frac';
+                if (subType === 'dec') {
+                    let d1 = (Math.random() * 9 + 1).toFixed(1);
+                    let d2 = (Math.random() * 5 + 0.5).toFixed(1);
+                    let ans = (parseFloat(d1) + parseFloat(d2)).toFixed(1);
+                    q.text = `Suma los siguientes decimales: ${d1} + ${d2}`;
+                    q.answer = ans.toString();
+                    q.explanation = `Sumando las partes decimales y enteras: ${d1} + ${d2} = ${ans}.`;
+                    q.options = generateDistractors(parseFloat(ans), 3, true);
+                } else {
+                    let num1 = Math.floor(Math.random() * 3) + 1;
+                    let den = Math.floor(Math.random() * 4) + 3;
+                    let ans = `${num1 * 2}/${den}`;
+                    q.text = `Simplifica o calcula: ¿Cuánto es (${num1}/${den}) + (${num1}/${den})?`;
+                    q.answer = ans;
+                    q.explanation = `Al sumar fracciones con igual denominador (${den}), sumamos los numeradores: ${num1} + ${num1} = ${num1*2}, quedando ${ans}.`;
+                    q.options = [ans, `${num1+1}/${den}`, `${num1}/${den+1}`, `${num1*2}/${den+2}`].sort(() => Math.random() - 0.5);
+                }
+            } 
+            else if (level === 3) {
+                q.category = "Álgebra Lineal";
+                let coef = Math.floor(Math.random() * 5) + 2;
+                let xVal = Math.floor(Math.random() * 10) + 1;
+                let constant = Math.floor(Math.random() * 20) + 1;
+                let total = (coef * xVal) + constant;
+                q.text = `Despeja x en la ecuación: ${coef}x + ${constant} = ${total}`;
+                q.answer = xVal.toString();
+                q.explanation = `Pasamos ${constant} restando: ${coef}x = ${total - constant}. Luego dividimos entre ${coef}, obteniendo x = ${xVal}.`;
+                q.options = generateDistractors(xVal, 3);
+            } 
+            else if (level === 4) {
+                q.category = "Geometría y Trig";
+                const sub = Math.random() > 0.5 ? 'pitagoras' : 'area';
+                if (sub === 'pitagoras') {
+                    let k = Math.floor(Math.random() * 3) + 1;
+                    let cat1 = 3 * k;
+                    let cat2 = 4 * k;
+                    let hyp = 5 * k;
+                    q.text = `En un triángulo rectángulo, los catetos miden ${cat1} y ${cat2}. ¿Cuál es la hipotenusa (c)?`;
+                    q.answer = hyp.toString();
+                    q.explanation = `Por el Teorema de Pitágoras: c² = a² + b² => c² = ${cat1*cat1} + ${cat2*cat2} = ${cat1*cat1 + cat2*cat2}. La raíz cuadrada es ${hyp}.`;
+                    q.options = generateDistractors(hyp, 3);
+                } else {
+                    let base = Math.floor(Math.random() * 10) + 4;
+                    let altura = Math.floor(Math.random() * 8) + 3;
+                    let area = (base * altura) / 2;
+                    q.text = `¿Cuál es el área de un triángulo con base ${base} y altura ${altura}? (Área = b × h / 2)`;
+                    q.answer = area.toString();
+                    q.explanation = `Fórmula del área de un triángulo: (Base × Altura) / 2 = (${base} × ${altura}) / 2 = ${area}.`;
+                    q.options = generateDistractors(area, 3, area % 1 !== 0);
+                }
+            } 
+            else {
+                q.category = "Cálculo Avanzado";
+                let coef = Math.floor(Math.random() * 4) + 2;
+                let exp = Math.floor(Math.random() * 3) + 2;
+                q.text = `Halla la derivada de f(x) = ${coef}x^${exp} respecto a x:`;
+                let newCoef = coef * exp;
+                let newExp = exp - 1;
+                let ansStr = newExp === 1 ? `${newCoef}x` : `${newCoef}x^${newExp}`;
+                q.answer = ansStr;
+                q.explanation = `Aplicamos la regla de la potencia: ${coef} · ${exp} · x^(${exp}-1) = ${newCoef}x^${newExp}.`;
+                q.options = [ansStr, `${coef}x^${exp}`, `${newCoef}x^${exp}`, `${coef*2}x^${newExp}`].sort(() => Math.random() - 0.5);
+            }
+
+            return q;
+        }
+
+        function generateDistractors(correct, count, isDecimal = false) {
+            let options = [correct.toString()];
+            while (options.length <= count) {
+                let offset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                let fake = isDecimal ? (parseFloat(correct) + offset * 0.5).toFixed(1) : (parseInt(correct) + offset);
+                if (fake >= 0 && !options.includes(fake.toString())) {
+                    options.push(fake.toString());
+                }
+            }
+            return options.sort(() => Math.random() - 0.5);
+        }
+
+        function checkAnswer(selectedOpt) {
+            const isCorrect = selectedOpt.toString().trim() === activeQuestion.answer.toString().trim();
+            processAnswerResult(isCorrect);
+        }
+
+        function submitNumericAnswer() {
+            const val = document.getElementById('numeric-answer-input').value.trim();
+            if (!val) return;
+            const isCorrect = val === activeQuestion.answer.toString().trim();
+            processAnswerResult(isCorrect);
+        }
+
+        function processAnswerResult(isCorrect) {
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.classList.remove('hidden');
+
+            const titleEl = document.getElementById('feedback-title');
+            const expEl = document.getElementById('feedback-explanation');
+
+            if (isCorrect) {
+                scoreCorrect++;
+                gameState.streak++;
+                gameState.xp += currentModule * 5 + 5;
+                gameState.gems += 2;
+                
+                titleEl.innerHTML = "✨ ¡Correcto! ¡Excelente trabajo!";
+                titleEl.className = "font-game text-base mb-1 text-emerald-400";
+                feedbackBox.className = "mt-6 p-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 transition-all animate-fadeIn";
+                
+                confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+            } else {
+                gameState.streak = 0;
+                lives--;
+                document.getElementById('game-lives').innerText = lives;
+
+                titleEl.innerHTML = `❌ Incorrecto. La respuesta era: <span class="text-indigo-300">${activeQuestion.answer}</span>`;
+                titleEl.className = "font-game text-base mb-1 text-rose-400";
+                feedbackBox.className = "mt-6 p-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 transition-all animate-fadeIn";
+
+                if (lives <= 0) {
+                    setTimeout(() => endGame(true), 1500);
+                    return;
+                }
+            }
+
+            expEl.innerText = activeQuestion.explanation;
+            updateUserData();
+            updateUI();
+
+            if (isTimedMode) {
+                setTimeout(() => loadNextQuestion(), 1200);
+            }
+        }
+
+        function nextQuestion() {
+            loadNextQuestion();
+        }
+
+        function quitGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            switchView('dashboard');
+        }
+
+        function endGame(isGameOverByLivesOrTime) {
+            if (timerInterval) clearInterval(timerInterval);
+            switchView('results');
+
+            const totalAns = isTimedMode ? currentQuestionIndex : totalQuestions;
+            const accuracy = Math.round((scoreCorrect / Math.max(totalAns, 1)) * 100);
+
+            document.getElementById('results-icon').innerText = isGameOverByLivesOrTime && lives <= 0 ? "⚠️" : "🏆";
+            document.getElementById('results-title').innerText = isGameOverByLivesOrTime && lives <= 0 ? "¡Juego Terminado!" : "¡Misión Superada!";
+            document.getElementById('results-subtitle').innerText = isGameOverByLivesOrTime && lives <= 0 ? "Te quedaste sin vidas o tiempo, ¡pero buen intento!" : "Has completado todas las preguntas del desafío.";
+
+            const xpEarned = scoreCorrect * (currentModule * 5);
+            const gemsEarned = scoreCorrect * 2;
+
+            document.getElementById('res-xp').innerText = `+${xpEarned}`;
+            document.getElementById('res-gems').innerText = `+${gemsEarned}`;
+            document.getElementById('res-score').innerText = `${scoreCorrect} / ${totalAns}`;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
+
+            if (!isGameOverByLivesOrTime) {
+                confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+            }
+        }
+
+        function restartCurrentModule() {
+            if (isTimedMode) startTimedChallenge();
+            else startModule(currentModule);
+        }
+
+        // ================= TIENDA Y LOGROS =================
+        function renderShop() {
+            document.getElementById('shop-gems-val').innerText = gameState.gems;
+            const grid = document.getElementById('shop-items-grid');
+            grid.innerHTML = '';
+
+            shopAvatars.forEach((item, idx) => {
+                const isUnlocked = gameState.unlockedAvatars.includes(item.icon) || item.unlocked;
+                const isSelected = gameState.avatar === item.icon;
+
+                const card = document.createElement('div');
+                card.className = `bg-slate-800 border ${isSelected ? 'border-cyan-400 shadow-cyan-500/20 shadow-lg' : 'border-slate-700'} rounded-2xl p-4 text-center flex flex-col items-center justify-between transition`;
+                
+                card.innerHTML = `
+                    <div class="text-4xl my-2">${item.icon}</div>
+                    <h4 class="font-game text-sm text-white">${item.name}</h4>
+                    <div class="text-xs text-cyan-300 my-2">${isUnlocked ? 'Desbloqueado' : `💎 ${item.price} gemas`}</div>
+                    <button onclick="handleShopAction(${idx})" class="w-full py-2 rounded-xl text-xs font-game transition ${isSelected ? 'bg-cyan-500 text-slate-900 font-bold' : (isUnlocked ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white')}">
+                        ${isSelected ? 'Equipado' : (isUnlocked ? 'Seleccionar' : 'Comprar')}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleShopAction(index) {
+            const item = shopAvatars[index];
+            const isUnlocked = gameState.unlockedAvatars.includes(item.icon) || item.unlocked;
+
+            if (isUnlocked) {
+                gameState.avatar = item.icon;
+            } else {
+                if (gameState.gems >= item.price) {
+                    gameState.gems -= item.price;
+                    gameState.unlockedAvatars.push(item.icon);
+                    gameState.avatar = item.icon;
+                    confetti({ particleCount: 60, spread: 70 });
+                } else {
+                    alert("¡No tienes suficientes gemas mágicas! Sigue completando módulos para ganar más.");
+                }
+            }
+            updateUserData();
+            updateUI();
+            renderShop();
+        }
+
+        function renderAchievements() {
+            const list = document.getElementById('achievements-list');
+            list.innerHTML = '';
+
+            Object.keys(gameState.achievements).forEach(key => {
+                const ach = gameState.achievements[key];
+                const card = document.createElement('div');
+                card.className = `bg-slate-800 border ${ach.unlocked ? 'border-amber-500/60 bg-amber-500/5' : 'border-slate-700'} rounded-2xl p-4 flex items-center space-x-4`;
+                
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-2xl ${ach.unlocked ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-900 text-slate-600'} flex items-center justify-center text-2xl font-game shadow-inner">
+                        ${ach.unlocked ? '🏆' : '🔒'}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-game text-sm sm:text-base text-white">${ach.title}</h4>
+                            <span class="text-xs ${ach.unlocked ? 'text-amber-400 font-semibold' : 'text-slate-500'}">${ach.unlocked ? '¡Completado!' : `Recompensa: ${ach.reward} XP`}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">${ach.desc}</p>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function renderProfile() {
+            document.getElementById('profile-current-avatar').innerText = gameState.avatar;
+            document.getElementById('profile-username').innerText = gameState.username || "Estudiante";
+            document.getElementById('profile-email').innerText = gameState.email || "demo@mathquest.com";
+            document.getElementById('profile-rank').innerText = gameState.isDemo ? "Modo Demo" : gameState.rank;
+            document.getElementById('profile-xp').innerText = gameState.xp;
+            document.getElementById('profile-gems').innerText = gameState.gems;
+            document.getElementById('profile-streak').innerText = gameState.streak;
+
+            const grid = document.getElementById('profile-avatars-grid');
+            grid.innerHTML = '';
+            gameState.unlockedAvatars.forEach(icon => {
+                const btn = document.createElement('button');
+                btn.className = `p-3 bg-slate-900 border-2 ${gameState.avatar === icon ? 'border-indigo-500' : 'border-slate-700'} rounded-xl text-2xl hover:scale-105 transition`;
+                btn.innerText = icon;
+                btn.onclick = () => {
+                    gameState.avatar = icon;
+                    updateUserData();
+                    updateUI();
+                    renderProfile();
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAchievementsProgress() {
+            if (gameState.isDemo) return;
+            if (!gameState.achievements.firstStep.unlocked && gameState.xp > 0) {
+                gameState.achievements.firstStep.unlocked = true;
+                gameState.xp += gameState.achievements.firstStep.reward;
+            }
+            if (!gameState.achievements.streakMaster.unlocked && gameState.streak >= 5) {
+                gameState.achievements.streakMaster.unlocked = true;
+                gameState.xp += gameState.achievements.streakMaster.reward;
+                gameState.gems += 20;
+            }
+            if (!gameState.achievements.einstein.unlocked && gameState.xp >= 300) {
+                gameState.achievements.einstein.unlocked = true;
+                gameState.gems += 50;
+            }
+            if (!gameState.achievements.mathemagician.unlocked && gameState.unlockedAvatars.length >= 3) {
+                gameState.achievements.mathemagician.unlocked = true;
+                gameState.gems += 40;
+            }
+            updateUserData();
+        }
+
+        // ================= FUNCIONES DE DONACIÓN (YAPE / PLIN) =================
+        function openDonateModal() {
+            document.getElementById('donate-modal').classList.remove('hidden');
+        }
+
+        function closeDonateModal() {
+            document.getElementById('donate-modal').classList.add('hidden');
+        }
+
+        function copyDonationNumber() {
+            const numberText = "+51942885581";
+            const textArea = document.createElement("textarea");
+            textArea.value = numberText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert("¡Número +51 942 885 581 copiado al portapapeles! Muchas gracias por tu apoyo 💖");
+            } catch (err) {
+                console.error('Error al copiar', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
