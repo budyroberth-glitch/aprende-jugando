@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e1b4b">
-    <meta name="description" content="Elige un juego educativo de MathQuest para aprender matemáticas, física y química jugando.">
-    <title>MathQuest | Juegos para aprender</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="MathQuest: catalogo de juegos educativos para aprender matemáticas, física y química jugando." />
+    <meta name="theme-color" content="#111827" />
+    <title>MathQuest | Juegos Educativos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -17,87 +17,195 @@
                     fontFamily: {
                         fredoka: ['Fredoka', 'sans-serif'],
                         poppins: ['Poppins', 'sans-serif']
+                    },
+                    boxShadow: {
+                        glow: '0 0 30px rgba(59, 130, 246, 0.35)'
                     }
                 }
             }
-        };
+        }
     </script>
     <style>
         body { font-family: 'Poppins', sans-serif; }
         .font-game { font-family: 'Fredoka', cursive, sans-serif; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        .float { animation: float 3s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .float { animation: float 3.2s ease-in-out infinite; }
     </style>
 </head>
-<body class="min-h-full flex flex-col bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white selection:bg-emerald-500 selection:text-white">
-    <header class="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/80 px-4 py-4 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center gap-3">
-            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-500 text-2xl shadow-lg shadow-emerald-500/20" aria-hidden="true">🎮</div>
-            <div>
-                <h1 class="font-game text-xl tracking-wide text-emerald-300">MathQuest</h1>
-                <p class="text-xs text-slate-400">Juegos para aprender jugando</p>
-            </div>
-        </div>
-    </header>
-
-    <main class="mx-auto w-full max-w-7xl flex-1 space-y-9 p-4 py-8 sm:p-8">
-        <section class="relative overflow-hidden rounded-3xl border border-indigo-400/20 bg-gradient-to-r from-indigo-900/80 via-purple-900/70 to-slate-900/90 p-6 shadow-2xl sm:p-10" aria-labelledby="welcome-title">
-            <div class="relative z-[1] max-w-3xl">
-                <span class="rounded-full bg-indigo-400/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-200">Tu espacio de aprendizaje</span>
-                <h2 id="welcome-title" class="font-game mt-4 text-3xl leading-tight sm:text-5xl">¿A qué quieres jugar hoy?</h2>
-                <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">Elige un juego y aprende a tu ritmo. Practica matemáticas ahora y vuelve pronto para descubrir nuevos retos de física y química.</p>
-            </div>
-            <div class="float absolute -bottom-8 right-4 select-none text-8xl opacity-20 sm:right-10 sm:text-9xl" aria-hidden="true">📚</div>
-        </section>
-
-        <section aria-labelledby="games-title">
-            <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-[.2em] text-emerald-300">Catálogo</p>
-                    <h2 id="games-title" class="font-game mt-1 text-2xl sm:text-3xl">Selecciona tu juego</h2>
+<body class="min-h-full bg-slate-950 text-white">
+    <div class="bg-grid min-h-full">
+        <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-md">
+            <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-500 shadow-glow text-2xl">
+                        🎮
+                    </div>
+                    <div>
+                        <h1 class="font-game text-xl tracking-wide text-emerald-300">MathQuest</h1>
+                        <p class="text-[11px] text-slate-400">Juegos para aprender jugando</p>
+                    </div>
                 </div>
-                <span class="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400">1 juego disponible</span>
+                <nav class="hidden items-center gap-3 md:flex">
+                    <a href="#catalogo" class="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-white">Juegos</a>
+                    <a href="#como-funciona" class="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-200 transition hover:border-indigo-400 hover:text-white">Cómo funciona</a>
+                </nav>
             </div>
+        </header>
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                <article class="group flex flex-col justify-between rounded-3xl border border-emerald-500/30 bg-slate-900/80 p-6 shadow-xl transition duration-200 hover:-translate-y-1 hover:border-emerald-400 hover:shadow-emerald-950/40">
+        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+            <section class="relative overflow-hidden rounded-[28px] border border-indigo-500/25 bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 p-6 shadow-2xl shadow-indigo-950/40 sm:p-8 lg:p-12">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.28),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_25%)]"></div>
+                <div class="relative z-10 grid items-center gap-8 lg:grid-cols-[1.35fr_0.65fr]">
                     <div>
-                        <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-3xl" aria-hidden="true">📐</div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Matemáticas · Disponible</span>
-                        <h3 class="font-game mt-2 text-2xl">MathQuest Academy</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-400">Entrena con cinco niveles: operaciones, fracciones, álgebra, geometría y cálculo. Gana XP, desbloquea avatares y prueba el reto contrarreloj.</p>
+                        <span class="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                            Aprende con diversión
+                        </span>
+                        <h2 class="font-game mt-5 text-4xl leading-tight text-white sm:text-5xl lg:text-6xl">
+                            Elige un juego y empieza a aprender.
+                        </h2>
+                        <p class="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
+                            MathQuest reúne retos de matemáticas, lógica y ciencia para que cada partida te ayude a mejorar, ganar puntos y seguir avanzando con motivación.
+                        </p>
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <a href="#catalogo" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-indigo-600 px-5 py-3 font-game text-base text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-indigo-500">
+                                Ver juegos
+                            </a>
+                            <a href="MathQuest_Academy.html" class="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900/60 px-5 py-3 font-game text-base text-slate-100 transition hover:border-indigo-400 hover:text-white">
+                                Ir a MathQuest
+                            </a>
+                        </div>
                     </div>
-                    <a href="MathQuest_Academy.html" class="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-indigo-600 px-5 py-3 text-center font-game text-base shadow-lg transition hover:from-emerald-400 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300">
-                        Jugar ahora <span aria-hidden="true">⚡</span>
-                    </a>
-                </article>
 
-                <article class="flex flex-col justify-between rounded-3xl border border-dashed border-slate-700 bg-slate-900/40 p-6 opacity-80" aria-label="Juego de física próximamente">
-                    <div>
-                        <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-3xl" aria-hidden="true">🪐</div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Física · Próximamente</span>
-                        <h3 class="font-game mt-2 text-2xl text-slate-300">Retos de Física</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-500">Pronto podrás explorar fuerzas, movimiento y energía con actividades interactivas.</p>
+                    <div class="relative">
+                        <div class="float relative overflow-hidden rounded-[28px] border border-indigo-400/30 bg-slate-900/80 p-5 shadow-2xl shadow-indigo-950/60">
+                            <div class="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Nivel</p>
+                                        <p class="font-game text-2xl text-emerald-300">Academia</p>
+                                    </div>
+                                    <div class="rounded-xl bg-emerald-500/15 px-3 py-2 text-2xl">📐</div>
+                                </div>
+                                <div class="mt-5 space-y-3">
+                                    <div class="flex items-center justify-between rounded-xl bg-slate-800/80 p-3">
+                                        <span class="text-sm text-slate-300">XP</span>
+                                        <span class="font-game text-amber-300">+120</span>
+                                    </div>
+                                    <div class="flex items-center justify-between rounded-xl bg-slate-800/80 p-3">
+                                        <span class="text-sm text-slate-300">Gemas</span>
+                                        <span class="font-game text-cyan-300">+15</span>
+                                    </div>
+                                    <div class="flex items-center justify-between rounded-xl bg-slate-800/80 p-3">
+                                        <span class="text-sm text-slate-300">Racha</span>
+                                        <span class="font-game text-orange-400">🔥 4</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span class="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/70 px-5 py-3 font-game text-sm text-slate-400">En desarrollo</span>
-                </article>
+                </div>
+            </section>
 
-                <article class="flex flex-col justify-between rounded-3xl border border-dashed border-slate-700 bg-slate-900/40 p-6 opacity-80" aria-label="Juego de química próximamente">
-                    <div>
-                        <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-3xl" aria-hidden="true">🧪</div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Química · Próximamente</span>
-                        <h3 class="font-game mt-2 text-2xl text-slate-300">Laboratorio Químico</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-500">Muy pronto habrá desafíos para aprender sobre elementos, mezclas y reacciones.</p>
+            <section id="como-funciona" class="mt-12">
+                <div class="mb-6">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Cómo funciona</p>
+                    <h3 class="font-game mt-2 text-3xl text-white">Tres pasos simples</h3>
+                </div>
+                <div class="grid gap-5 md:grid-cols-3">
+                    <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+                        <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-2xl">1</div>
+                        <h4 class="font-game text-xl text-white">Selecciona</h4>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Elige el juego que más te interese según tu nivel o tema favorito.</p>
                     </div>
-                    <span class="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/70 px-5 py-3 font-game text-sm text-slate-400">En desarrollo</span>
-                </article>
+                    <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+                        <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/15 text-2xl">2</div>
+                        <h4 class="font-game text-xl text-white">Juega</h4>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Responde preguntas, gana puntos y desbloquea niveles con cada logro.</p>
+                    </div>
+                    <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+                        <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/15 text-2xl">3</div>
+                        <h4 class="font-game text-xl text-white">Avanza</h4>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-400">Sube de nivel, mejora tu rendimiento y sigue aprendiendo con retos cada vez más difíciles.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="catalogo" class="mt-12">
+                <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Catálogo</p>
+                        <h3 class="font-game mt-2 text-3xl text-white">Juegos disponibles</h3>
+                    </div>
+                    <span class="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400">1 disponible · 2 próximamente</span>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <article class="group flex flex-col justify-between overflow-hidden rounded-[28px] border border-emerald-400/30 bg-slate-900/80 p-6 shadow-xl shadow-emerald-950/20 transition hover:-translate-y-1 hover:border-emerald-400">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-3xl">📐</div>
+                                <span class="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-200">Disponible</span>
+                            </div>
+                            <h4 class="font-game mt-5 text-2xl text-white">MathQuest Academy</h4>
+                            <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                                Academia interactiva con cinco niveles de dificultad, tienda de avatares, ranking, logros y modo contrarreloj.
+                            </p>
+                        </div>
+                        <div class="mt-6 border-t border-slate-800 pt-4">
+                            <div class="mb-4 flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-slate-400">
+                                <span>Matemáticas</span>
+                                <span>HTML5 / JS</span>
+                            </div>
+                            <a href="MathQuest_Academy.html" class="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-indigo-600 px-4 py-3 font-game text-base text-white transition hover:from-emerald-400 hover:to-indigo-500">
+                                Jugar ahora ⚡
+                            </a>
+                        </div>
+                    </article>
+
+                    <article class="flex flex-col justify-between overflow-hidden rounded-[28px] border border-dashed border-slate-700 bg-slate-900/40 p-6 opacity-85">
+                        <div>
+                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-3xl">🪐</div>
+                            <h4 class="font-game mt-5 text-2xl text-slate-300">Retos de Física</h4>
+                            <p class="mt-3 text-sm leading-relaxed text-slate-500">
+                                Pronto tendrás desafíos sobre fuerzas, movimiento, energía y experimentos enfocados en la física aplicada.
+                            </p>
+                        </div>
+                        <div class="mt-6 border-t border-slate-800/70 pt-4">
+                            <span class="inline-flex rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2 text-[11px] uppercase tracking-wider text-slate-400">Próximamente</span>
+                        </div>
+                    </article>
+
+                    <article class="flex flex-col justify-between overflow-hidden rounded-[28px] border border-dashed border-slate-700 bg-slate-900/40 p-6 opacity-85">
+                        <div>
+                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-3xl">🧪</div>
+                            <h4 class="font-game mt-5 text-2xl text-slate-300">Laboratorio Químico</h4>
+                            <p class="mt-3 text-sm leading-relaxed text-slate-500">
+                                En desarrollo: actividades para saber más sobre elementos, compuestos, reacciones y mezclas de forma visual.
+                            </p>
+                        </div>
+                        <div class="mt-6 border-t border-slate-800/70 pt-4">
+                            <span class="inline-flex rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2 text-[11px] uppercase tracking-wider text-slate-400">Próximamente</span>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <footer class="border-t border-slate-800 bg-slate-950/80">
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-center text-xs text-slate-500 sm:flex-row sm:text-left">
+                <span>MathQuest © 2026 · Diseñado para aprender jugando</span>
+                <span>Matemáticas · Física · Química</span>
             </div>
-        </section>
-    </main>
-
-    <footer class="border-t border-slate-800 px-4 py-5 text-center text-xs text-slate-500">
-        MathQuest · Aprender jugando, crecer explorando · © 2026
-    </footer>
+        </footer>
+    </div>
 </body>
 </html>
